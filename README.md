@@ -299,7 +299,7 @@ Kafka topic's messages has been controlled from Kafka UI.
 
 **Batch Processing**
 
-All messages accumulated in Kafka have been batch transferred to Parquet files. This batch processing approach allows for efficient writing of large volumes of data into the columnar Parquet format, which optimizes storage space and query performance.
+All messages accumulated in Kafka have been batch transferred to Parquet files. This batch processing approach allows for efficient writing of large volumes of data into the columnar Parquet format, which optimizes storage space and query performance. (FromKafkaToParquetFile.py)
 
 **Real-Time Processing**
 
@@ -344,17 +344,31 @@ import_total INT,
 export_total INT
 );
 ```
-The streaming data is processed, transformed, and enriched on-the-fly, and then written directly to Apache Cassandra:
-**13- Select data from cassandra**
 
-**14- Transfer data from Cassandra To BigQuery**
+The streaming data is processed, transformed, and enriched on-the-fly, and then written directly to Apache Cassandra. (TransferDataFromKafkaToCassandra.ipynb)
 
-**15- Connected Cassandra to Grafana and created a dashboard**
 
-**16- Add Apache AirFlow container and create dags**
-Two separate DAGs were initially created: one for transferring data from the API to Kafka (transfer_data_from_api_to_kafka), and another for transferring data from Cassandra to BigQuery (transfer_data_from_cassandra_to_bigquery).
-Both DAGs were running successfully.
-Later, they were combined into a single DAG named etl_data_api_kafkaandcassandra_bigdata.
+**Transfer data from Cassandra To BigQuery**
 
+Data stored in Apache Cassandra is transferred to Google BigQuery for advanced analytics and reporting. BigQuery’s fully managed, serverless data warehouse provides powerful SQL-based querying capabilities and supports large-scale data analysis. By moving data from Cassandra to BigQuery, the project enables efficient, scalable, and fast analytical queries, making it easier to generate business insights and visualizations.(TransferDataFromCassandraToBigQuery.py)
+
+**Data Analysis and Visualization**
+
+Custom queries were developed to generate subtables in **BigQuery** for organizing and optimizing data analysis
+
+To enable effective monitoring and visualization, Grafana—a popular open-source analytics and monitoring platform—is connected to Cassandra. **Grafana** allows the creation of dynamic dashboards that reflect up-to-date energy consumption and production metrics. This integration provides an interactive platform for analyzing trends and making data-driven decisions based on the stored electricity data.
+
+**Automation and Orchestration**
+
+Data ingestion and pipeline orchestration in this project are managed using **Apache Airflow**, an open-source platform designed to programmatically author, schedule, and monitor workflows. Real-time electricity data is extracted from the Electricity Maps API and ingested into Apache Kafka via scheduled workflows in Airflow. Additionally, Airflow orchestrates the batch transfer of processed data from Apache Cassandra to Google BigQuery for advanced analytics and reporting. (api_kafka_cassandra_big_querydag.py)
+
+**Conclusion**
+
+This project successfully demonstrates the design and implementation of a real-time data processing and analytics pipeline using modern big data technologies. By leveraging tools such as Apache Kafka, Spark, Cassandra, and Google Cloud services like Dataproc and BigQuery, a scalable and efficient platform was built to ingest, process, store, and visualize electricity data retrieved from the Electricity Maps API. The integration of Apache Airflow ensured reliable and automated orchestration of data workflows, while Grafana enabled real-time monitoring through dynamic dashboards. Overall, the project showcases a robust end-to-end solution for handling streaming data and generating actionable insights in real time.
+All project details are in 
+
+**Acknowledgements**
+
+I would like to express my heartfelt thanks to Zekeriya Beşiroğlu for his valuable guidance and mentorship throughout the bootcamp. I am also grateful to all the participants of the program for their collaboration and support. Special thanks to İstanbul Data Science Academy for organizing this enriching learning experience. Lastly, I extend my deepest gratitude to my beloved family, who supported me unconditionally and gave me the space to focus and grow during this journey.
 
  
