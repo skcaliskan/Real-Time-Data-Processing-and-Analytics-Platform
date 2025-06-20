@@ -1,4 +1,4 @@
-# Real-Time-Data-Processing-and-Analytics-Platform
+****Real-Time-Data-Processing-and-Analytics-Platform****
 
 The aim of this project is to design and develop a scalable, efficient, and reliable platform capable of ingesting, processing, analyzing, and visualizing high-volume data streams in real time. Using the technologies learned during the Data Engineering & Big Data Bootcamp, an end-to-end real-time data processing and analytics solution will be implemented. This platform is intended to support timely decision-making by generating actionable insights across various domains.
 
@@ -26,27 +26,26 @@ In this project, real-time electricity data is collected from the Electricity Ma
   	
 **Technologies to be used**
 
-    •	Programming Language: Python
+Programming Language: Python
     
-    •	Data Flow: Apache Kafka
+Data Flow: Apache Kafka
     
-    •	Data Processing: Apache Spark
+Data Processing: Apache Spark
     
-    •	Data Storage: Apache Cassandra, Parquet
+Data Storage: Apache Cassandra, Parquet
     
-    •	Data Warehouse: Google BigQuery
+Data Warehouse: Google BigQuery
     
-    •	Visualization: Grafana
+Visualization: Grafana
     
-    •	Orchestration: Apache Airflow
+Orchestration: Apache Airflow
     
-    •	Containerization: Docker GCP
+Containerization: Docker GCP
     
+**Environment Setup on Google Cloud Platform**
 
-
-**1-IAM permissions have been created.**
-
-•	Compute engine default service account:
+In this project, the environment setup began with the configuration of **Identity and Access Management (IAM)** permissions to control access to cloud resources securely. 
+Compute engine default service account:
 
 •	Editor
 
@@ -59,16 +58,14 @@ In this project, real-time electricity data is collected from the Electricity Ma
 •	BirgQuery Admin
 
 
+And then **Virtual Private Cloud (VPC)** networks appropriate firewall rules were defined to manage network traffic and ensure secure communication between services. 
 
-**2-VPC firewall rules have been created.** 
+Ingress ports: 2181, 3000, 5432, 8080, 8081, 9042, 9043, 9044, 9092
 
-•	Ingress: 2181, 3000, 5432, 8080, 8081, 9042, 9043, 9044, 9092
-
-•	Egress ports: 2181, 3000, 5432, 8080, 8081, 9042, 9043, 9044, 9092
-
+Egress ports: 2181, 3000, 5432, 8080, 8081, 9042, 9043, 9044, 9092
 
 
-**3-Dataproc cluster has been created.**
+Once the security and networking setup was completed, a cluster for real-time data processing was provisioned using **Google Cloud Dataproc.** The cluster was configured with appropriate machine types and sufficient storage to efficiently handle data. 
 
 •	Set up cluster: Region:us-central1, Zone:Any; Cluster Type: Single Node)
 
@@ -77,10 +74,7 @@ In this project, real-time electricity data is collected from the Electricity Ma
 •	Customize cluster: Unselect InternalIp Only
 
 
-**4- VM Instance has been created by Dataproc**
-
-
-**5- Update& Uprade and install docker and docker-compose**
+**The necessary installations and upgrades** are performed by connecting to the VM machine via SSH.
 
 ```
 sudo su
@@ -88,7 +82,8 @@ sudo su
 apt update && apt upgrade -y &#& apt install docker.io -y && apt install docker-compose -y
 ```
 
-**6- nano docker-compose.yml and docker-compose up -d**
+“nano docker-compose.yml” A **docker-compose.yml** file is created for the technologies to be used in the project.
+The “docker-compose up” command is used to start and run multiple Docker containers defined in the docker-compose.yml file. This command simplifies the process of launching multi-container applications by handling networking, volume mounting, and dependency management automatically.
 
 ```
 version: '3.9'
@@ -258,10 +253,22 @@ networks:
 ```
 Services have been controlled with 'docker ps -a'
 
-**7- Kafka topic has been created with Kafka UI**
+**Data Source**
 
-**8- Data has been transfered from API to Kafka**
+“https://portal.electricitymaps.com/docs/api#power-breakdown-latest” this endpoint retrieves data about the origin of electricity in an area. Germany, France, Italy and Spain have been used for this project.
+Information provided by the API:
+•	"powerProduction" (in MW) represents the electricity produced in the zone, broken down by production type
+•	"powerConsumption" (in MW) represents the electricity consumed in the zone, after taking into account imports and exports, and broken down by production type.
+•	"powerExport" and "Power import" (in MW) represent the physical electricity flows at the zone border
+•	"renewablePercentage" and "fossilFreePercentage" refers to the % of the power consumption breakdown coming from renewables or fossil-free power plants (renewables and nuclear). It can either be queried by zone identifier or by geolocation.
+Data Collection: Real-time data flow using Apache Kafka
+Apache Kafka is a distributed event streaming platform designed for high-throughput, fault-tolerant, and real-time data transmission. In this project, Kafka is used to serve as a central messaging backbone. Kafka decouples the data source from downstream systems, allowing other components to consume and process the data independently and efficiently. This approach ensures reliable and scalable data flow across the platform.
 
+Kafka topic has been created with Kafka UI.
+
+For interactive processing and analysis, Jupyter Notebooks with PySpark were used within the Dataproc environment. Real-time electricity data retrieved from the Electricity Maps API is published to a Kafka topic using a custom ingestion script. (FromApiToKafka.ipynb)
+
+Germany, France, Italy and Spain have been used for this project. An tokens.json file includes API’s parameters for these zones:
 ```
 [
     {
@@ -286,14 +293,58 @@ Services have been controlled with 'docker ps -a'
     }
   ]
 ```
-**9- Kafka topic's messages has been controlled from Kafka UI**
+Kafka topic's messages has been controlled from Kafka UI.
 
-**10- Batch data transfer to parquet**
+**Data Processing & Data Storage**
 
-**11- Transfer data from Kafka to Cassandra with Spark in SSH**
+**Batch Processing**
 
-**12- Hadoop running applications have been controlled from UI**
+All messages accumulated in Kafka have been batch transferred to Parquet files. This batch processing approach allows for efficient writing of large volumes of data into the columnar Parquet format, which optimizes storage space and query performance.
 
+**Real-Time Processing**
+
+Real-time data processing is performed using Apache Spark Structured Streaming, which continuously consumes messages from the Kafka topics. The streaming data is processed, transformed, and enriched on-the-fly, and then written directly to Apache Cassandra. Cassandra’s distributed, high-availability architecture makes it well-suited for handling the fast and large-scale write operations generated by the real-time pipeline. This integration enables efficient storage and retrieval of streaming data for immediate analytics and querying.
+
+Firstly keyspace and table has been create in cassandra, and then spark code executed with SparkSession:
+
+```
+
+CREATE KEYSPACE IF NOT EXISTS power WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1};
+
+
+
+CREATE TABLE IF NOT EXISTS power.powerbreakdown (
+    id UUID PRIMARY KEY,
+    zoneid INT,
+    zone TEXT, 
+    getdatadatetime Timestamp,
+    cons_nuclear INT,
+    cons_geothermal INT,
+    cons_biomass INT,
+    cons_coal INT,
+    cons_solar INT,
+    cons_wind INT,
+    cons_hydro INT,
+    cons_gas INT,
+    cons_oil INT,
+    cons_unknown INT,
+    prod_nuclear INT,
+    prod_geothermal INT,
+    prod_biomass INT,
+    prod_coal INT,
+    prod_solar INT,
+    prod_wind INT,
+    prod_hydro INT,
+    prod_gas INT,
+    prod_oil INT,
+    prod_unknown INT,
+consumption_total INT,
+production_total INT,
+import_total INT,
+export_total INT
+);
+```
+The streaming data is processed, transformed, and enriched on-the-fly, and then written directly to Apache Cassandra:
 **13- Select data from cassandra**
 
 **14- Transfer data from Cassandra To BigQuery**
