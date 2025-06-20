@@ -25,6 +25,7 @@ In this project, real-time electricity data is collected from the Electricity Ma
     •	Containerization: Containerizing applications with Docker.
   	
 **Technologies to be used**
+
     •	Programming Language: Python
     
     •	Data Flow: Apache Kafka
