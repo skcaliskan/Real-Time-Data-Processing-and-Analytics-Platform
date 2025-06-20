@@ -26,13 +26,21 @@ In this project, real-time electricity data is collected from the Electricity Ma
   	
 **Technologies to be used**
     •	Programming Language: Python
+    
     •	Data Flow: Apache Kafka
+    
     •	Data Processing: Apache Spark
+    
     •	Data Storage: Apache Cassandra, Parquet
+    
     •	Data Warehouse: Google BigQuery
+    
     •	Visualization: Grafana
+    
     •	Orchestration: Apache Airflow
+    
     •	Containerization: Docker GCP
+    
 
 
 **1-IAM permissions have been created.**
